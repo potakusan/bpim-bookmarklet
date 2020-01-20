@@ -91,7 +91,7 @@ class Main {
 }
 class Getter {
     constructor() {
-        this.diff = 11;
+        this.diff = 10;
         this.offset = 0;
         this.rivalId = "";
     }
