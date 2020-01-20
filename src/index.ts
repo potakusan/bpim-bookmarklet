@@ -1,9 +1,47 @@
 //import cheerio from 'cheerio';
 
 interface score{
-  title:string,
-
+  title:string
 }
+
+const leggendariaSongs:string[] = [
+  "ABSOLUTE",
+  "Clione",
+  "RED ZONE",
+  "spiral galaxy",
+  "Little Little Princess",
+  "CONTRACT",
+  "waxing and wanding",
+  "KAMAITACHI",
+  "Blue Rain",
+  "THE DEEP STRIKER",
+  "Kung-fu Empire",
+  "THANK YOU FOR PLAYING",
+  "凛として咲く花の如く",
+  "Golden Palms",
+  "QUANTUM TELEPORTATION",
+  "Howling",
+  "朧",
+  "龍と少女とデコヒーレンス",
+  "廿",
+  "Beat Radiance",
+  "CHRONO DIVER -NORNIR-",
+  "Cosmic Cat",
+  "恋は白帯、サンシロー",
+  "超青少年ノ為ノ超多幸ナ超古典的超舞曲",
+  "Damage Per Second",
+  "STARLIGHT DANCEHALL",
+  "Amazing Mirage",
+  "冬椿 ft. Kanae Asaba",
+  "Wanna Party?",
+  "AIR RAID FROM THA UNDAGROUND",
+  "Twelfth Style",
+  "B4U(BEMANI FOR YOU MIX)",
+  "Welcome",
+  "GRID KNIGHT",
+  "RUGGED ASH",
+  "Ubertreffen",
+]
 
 class Main {
 
@@ -21,13 +59,13 @@ class Main {
     if(document.domain.indexOf("eagate.573.jp") === -1){
       return alert("対応外のページです。");
     }
-    //await this.getter.get();
+    console.log("v0.0.1");
     const dani = await this.getter.getDaniList();
     const list = dani.list;
     let songsList:{[key:string]:number[]} = {};
     for(let i =0; i < list.length; ++i){
       this.getter.setRivalId(list[i]["rival"]);
-      for(let j =0; j < 8; ++j){
+      for(let j =0; j < 7; ++j){
         this.getter.setOffset(j);
         console.log(i,list[i]["rival"],"offset:" + j * 50)
         //await this.wait(200);
@@ -73,9 +111,9 @@ class Getter {
 
   parseBlob(blob:any):Promise<string>{
     return new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => { resolve(reader.result as string) };
-        reader.readAsText(blob, 'shift-jis');
+      const reader = new FileReader();
+      reader.onload = () => { resolve(reader.result as string) };
+      reader.readAsText(blob, 'shift-jis');
     });
   }
 
@@ -103,14 +141,14 @@ class Getter {
         "grade_id":"18",
         "play_style":"0",
         "page":"0",
-        "limit":"5000",
+        "limit":"10",
         "release_9_10_kaiden":"2",
       };
       let res = await fetch(
         `https://p.eagate.573.jp/game/2dx/27/ranking/json/dani.html?grade_id=${obj["grade_id"]}&play_style=${obj["play_style"]}&page=${obj["page"]}&limit=${obj["limit"]}&release_9_10_kaiden=${obj["release_9_10_kaiden"]}`,
         {
-        method:"POST",
-        credentials: "same-origin",
+          method:"POST",
+          credentials: "same-origin",
         }
       );
       if(!res.ok || res.status !== 200){
@@ -152,6 +190,7 @@ class Scraper{
       return {};
     }
     let res:songs = {};
+    let lastSongName = "";
     const matcher = this.rawBody.match(/<tr>.*?<\/tr>/g);
     if(!matcher){return {};}
     for(let key in matcher){
@@ -162,8 +201,27 @@ class Scraper{
         if(songName){
           const score = _matcher[3].split(/<br>/);
           if(score && score[0] !== "0"){
-            res[songName[0]] = Number(score[0]);
+            //another譜面が別レベルに存在するleggendaria譜面を識別
+            let suffix = "(A)";
+            if(leggendariaSongs.indexOf(songName[0]) > -1){
+              suffix = "(L)";
+            }else{
+              //同名別譜面の識別(先にanotherが、後にleggendaria譜面が並ぶことを利用)
+              if(lastSongName === songName[0]){
+                suffix = "(L)";
+                if(songName[0] === "gigadelic" || songName[0] === "Innocent Walls"){
+                  suffix = "(A)";
+                }
+              }else{
+                //gigadelic,Innocent Wallsのみ例外
+                if(songName[0] === "gigadelic" || songName[0] === "Innocent Walls"){
+                  suffix = "(H)";
+                }
+              }
+            }
+            res[songName[0] + suffix] = Number(score[0]);
           }
+          lastSongName = songName[0];
         }
       }
     }

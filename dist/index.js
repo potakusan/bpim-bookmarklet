@@ -1,14 +1,51 @@
 "use strict";
 //import cheerio from 'cheerio';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const leggendariaSongs = [
+    "ABSOLUTE",
+    "Clione",
+    "RED ZONE",
+    "spiral galaxy",
+    "Little Little Princess",
+    "CONTRACT",
+    "waxing and wanding",
+    "KAMAITACHI",
+    "Blue Rain",
+    "THE DEEP STRIKER",
+    "Kung-fu Empire",
+    "THANK YOU FOR PLAYING",
+    "™z‚Æ‚µ‚Äç‚­‰Ô‚Ì”@‚­",
+    "Golden Palms",
+    "QUANTUM TELEPORTATION",
+    "Howling",
+    "žO",
+    "—´‚Æ­—‚ÆƒfƒRƒq[ƒŒƒ“ƒX",
+    "“ù",
+    "Beat Radiance",
+    "CHRONO DIVER -NORNIR-",
+    "Cosmic Cat",
+    "—ö‚Í”’‘ÑAƒTƒ“ƒVƒ[",
+    "’´Â­”Nƒmˆ×ƒm’´‘½Kƒi’´ŒÃ“T“I’´•‘‹È",
+    "Damage Per Second",
+    "STARLIGHT DANCEHALL",
+    "Amazing Mirage",
+    "“~’Ö ft. Kanae Asaba",
+    "Wanna Party?",
+    "AIR RAID FROM THA UNDAGROUND",
+    "Twelfth Style",
+    "B4U(BEMANI FOR YOU MIX)",
+    "Welcome",
+    "GRID KNIGHT",
+    "RUGGED ASH",
+    "Ubertreffen",
+];
 class Main {
     constructor() {
         this.mode = 0;
@@ -20,15 +57,15 @@ class Main {
     exec() {
         return __awaiter(this, void 0, void 0, function* () {
             if (document.domain.indexOf("eagate.573.jp") === -1) {
-                return alert("å¯¾å¿œå¤–ã®ãƒšãƒ¼ã‚¸ã§ã™ã€‚");
+                return alert("‘Î‰žŠO‚Ìƒy[ƒW‚Å‚·B");
             }
-            //await this.getter.get();
+            console.log("v0.0.1");
             const dani = yield this.getter.getDaniList();
             const list = dani.list;
             let songsList = {};
             for (let i = 0; i < list.length; ++i) {
                 this.getter.setRivalId(list[i]["rival"]);
-                for (let j = 0; j < 8; ++j) {
+                for (let j = 0; j < 7; ++j) {
                     this.getter.setOffset(j);
                     console.log(i, list[i]["rival"], "offset:" + j * 50);
                     //await this.wait(200);
@@ -142,6 +179,7 @@ class Scraper {
             return {};
         }
         let res = {};
+        let lastSongName = "";
         const matcher = this.rawBody.match(/<tr>.*?<\/tr>/g);
         if (!matcher) {
             return {};
@@ -154,8 +192,29 @@ class Scraper {
                 if (songName) {
                     const score = _matcher[3].split(/<br>/);
                     if (score && score[0] !== "0") {
-                        res[songName[0]] = Number(score[0]);
+                        //another•ˆ–Ê‚ª•ÊƒŒƒxƒ‹‚É‘¶Ý‚·‚éleggendaria•ˆ–Ê‚ðŽ¯•Ê
+                        let suffix = "(A)";
+                        if (leggendariaSongs.indexOf(songName[0]) > -1) {
+                            suffix = "(L)";
+                        }
+                        else {
+                            //“¯–¼•Ê•ˆ–Ê‚ÌŽ¯•Ê(æ‚Éanother‚ªAŒã‚Éleggendaria•ˆ–Ê‚ª•À‚Ô‚±‚Æ‚ð—˜—p)
+                            if (lastSongName === songName[0]) {
+                                suffix = "(L)";
+                                if (songName[0] === "gigadelic" || songName[0] === "Innocent Walls") {
+                                    suffix = "(A)";
+                                }
+                            }
+                            else {
+                                //gigadelic,Innocent Walls‚Ì‚Ý—áŠO
+                                if (songName[0] === "gigadelic" || songName[0] === "Innocent Walls") {
+                                    suffix = "(H)";
+                                }
+                            }
+                        }
+                        res[songName[0] + suffix] = Number(score[0]);
                     }
+                    lastSongName = songName[0];
                 }
             }
         }
